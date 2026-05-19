@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane
+        xmlns="http://javafx.com/javafx/21"
+        xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="com.brenis.controller.CajaController"
+        prefWidth="1000"
+        prefHeight="680"
+        style="-fx-background-color: #f0f2f5;">
+
+    <top>
+        <VBox style="-fx-background-color: #2c3e50; -fx-padding: 12 20 12 20;">
+            <Label
+                    text="Sistema POS — Caja Cajero"
+                    style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <!-- Estado del turno: actualizado por CajaController.actualizarEstadoUI() -->
+                <Label
+                        fx:id="lblEstadoTurno"
+                        text="○ CAJA CERRADA"
+                        style="-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <!-- ID y nombre del cajero del turno activo -->
+                <Label
+                        fx:id="lblIdTurnoActivo"
+                        text="Sin turno activo en esta sesión"
+                        style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.38">
+            <BorderPane.margin>
+                <Insets top="10" right="10" bottom="5" left="10"/>
+            </BorderPane.margin>
+
+            <!-- ── PANEL IZQUIERDO: Operaciones de Caja ─────────────────── -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                <VBox spacing="15" style="-fx-padding: 10;">
+
+                    <!-- ── TARJETA: ABRIR CAJA ───────────────────────────── -->
+                    <!--
+                        fx:id="panelAbrirCaja" → referenciado en el controlador
+                        para deshabilitar/habilitar la sección completa.
+                    -->
+                    <VBox
+                            fx:id="panelAbrirCaja"
+                            spacing="10"
+                            style="-fx-background-color: white;
+                                   -fx-border-color: #27ae60;
+                                   -fx-border-width: 0 0 0 4;
+                                   -fx-border-radius: 4;
+                                   -fx-background-radius: 4;
+                                   -fx-padding: 15;
+                                   -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
+
+                        <Label
+                                text="▶  ABRIR CAJA"
+                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+
+                        <Separator/>
+
+                        <!-- Campo: Nombre del Cajero -->
+                        <VBox spacing="4">
+                            <Label text="Nombre del Cajero *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #555;"/>
+                            <!--
+                                fx:id="txtNombreCajero"
+                                → @FXML private TextField txtNombreCajero en CajaController
+                            -->
+                            <TextField
+                                    fx:id="txtNombreCajero"
+                                    promptText="Ingrese nombre completo (máx. 100 caracteres)"
+                                    maxWidth="Infinity"/>
+                            <Label
+                                    text="Límite: 100 caracteres (char[100] = 200 bytes en disco)"
+                                    style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                        </VBox>
+
+                        <!-- Campo: Monto de Apertura -->
+                        <VBox spacing="4">
+                            <Label text="Monto de Apertura *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #555;"/>
+                            <!--
+                                fx:id="txtMontoApertura"
+                                → @FXML private TextField txtMontoApertura
+                                Solo acepta números decimales (validación en initialize())
+                            -->
+                            <TextField
+                                    fx:id="txtMontoApertura"
+                                    promptText="Ej: 500.00"
+                                    maxWidth="Infinity"/>
+                            <Label
+                                    text="Almacenado como double (8 bytes) → DECIMAL(10,2) en MySQL"
+                                    style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                        </VBox>
+
+                        <!--
+                            Botón Abrir Caja
+                            onAction="#handleAbrirCaja" → llama al método @FXML handleAbrirCaja()
+                            fx:id="btnAbrirCaja" → para deshabilitarlo cuando hay turno activo
+                        -->
+                        <Button
+                                fx:id="btnAbrirCaja"
+                                text="✔  Abrir Caja"
+                                onAction="#handleAbrirCaja"
+                                maxWidth="Infinity"
+                                style="-fx-background-color: #27ae60;
+                                       -fx-text-fill: white;
+                                       -fx-font-weight: bold;
+                                       -fx-font-size: 13px;
+                                       -fx-cursor: hand;
+                                       -fx-background-radius: 4;">
+                            <VBox.margin>
+                                <Insets top="5"/>
+                            </VBox.margin>
+                        </Button>
+                    </VBox>
+
+                    <!-- ── TARJETA: CERRAR CAJA ──────────────────────────── -->
+                    <VBox
+                            fx:id="panelCerrarCaja"
+                            spacing="10"
+                            style="-fx-background-color: white;
+                                   -fx-border-color: #e74c3c;
+                                   -fx-border-width: 0 0 0 4;
+                                   -fx-border-radius: 4;
+                                   -fx-background-radius: 4;
+                                   -fx-padding: 15;
+                                   -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
+
+                        <Label
+                                text="■  CERRAR CAJA"
+                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+
+                        <Separator/>
+
+                        <!-- Campo: ID del Turno -->
+                        <VBox spacing="4">
+                            <Label text="ID del Turno *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #555;"/>
+                            <!--
+                                fx:id="txtIdTurno"
+                                → Se pre-rellena automáticamente con el ID del turno
+                                  recién abierto (ver handleAbrirCaja en el controlador)
+                            -->
+                            <TextField
+                                    fx:id="txtIdTurno"
+                                    promptText="ID asignado al abrir caja"
+                                    maxWidth="Infinity"/>
+                        </VBox>
+
+                        <!-- Campo: Monto de Cierre -->
+                        <VBox spacing="4">
+                            <Label text="Monto de Cierre *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #555;"/>
+                            <!--
+                                fx:id="txtMontoCierre"
+                                → Solo acepta decimales (validación en initialize())
+                            -->
+                            <TextField
+                                    fx:id="txtMontoCierre"
+                                    promptText="Ej: 750.50"
+                                    maxWidth="Infinity"/>
+                            <Label
+                                    text="seek() actualiza offset +212 (montoCierre) y +228 (estado)"
+                                    style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                        </VBox>
+
+                        <!--
+                            Botón Cerrar Caja
+                            onAction="#handleCerrarCaja" → llama a handleCerrarCaja()
+                            fx:id="btnCerrarCaja" → inicia deshabilitado
+                        -->
+                        <Button
+                                fx:id="btnCerrarCaja"
+                                text="■  Cerrar Caja"
+                                onAction="#handleCerrarCaja"
+                                disable="true"
+                                maxWidth="Infinity"
+                                style="-fx-background-color: #e74c3c;
+                                       -fx-text-fill: white;
+                                       -fx-font-weight: bold;
+                                       -fx-font-size: 13px;
+                                       -fx-cursor: hand;
+                                       -fx-background-radius: 4;">
+                            <VBox.margin>
+                                <Insets top="5"/>
+                            </VBox.margin>
+                        </Button>
+                    </VBox>
+
+                    <!-- ── BOTONES AUXILIARES ────────────────────────────── -->
+                    <HBox spacing="8">
+                        <!--
+                            Botón de refresco de tabla
+                            onAction="#handleRefrescarHistorial"
+                        -->
+                        <Button
+                                text="↺  Refrescar"
+                                onAction="#handleRefrescarHistorial"
+                                style="-fx-background-color: #3498db; -fx-text-fill: white;
+                                       -fx-background-radius: 4; -fx-cursor: hand;"
+                                HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                        <!--
+                            Botón de diagnóstico (para la exposición académica)
+                            onAction="#handleDiagnostico"
+                        -->
+                        <Button
+                                text="⚙  Diagnóstico"
+                                onAction="#handleDiagnostico"
+                                style="-fx-background-color: #8e44ad; -fx-text-fill: white;
+                                       -fx-background-radius: 4; -fx-cursor: hand;"
+                                HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    </HBox>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- ── PANEL DERECHO: Tabla de Historial ────────────────────── -->
+            <VBox spacing="8" style="-fx-padding: 10;">
+                <Label
+                        text="Historial de Turnos"
+                        style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                <TableView
+                        fx:id="tablaHistorial"
+                        VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: white; -fx-background-radius: 4;">
+
+                    <placeholder>
+                        <Label text="No hay registros en el archivo binario aún" style="-fx-text-fill: gray;"/>
+                    </placeholder>
+
+                    <columns>
+                        <TableColumn
+                                fx:id="colId"
+                                text="ID"
+                                prefWidth="45"
+                                style="-fx-alignment: CENTER;"/>
+
+                        <TableColumn
+                                fx:id="colNombre"
+                                text="Cajero"
+                                prefWidth="150"/>
+
+                        <TableColumn
+                                fx:id="colMontoApertura"
+                                text="Apertura"
+                                prefWidth="100"
+                                style="-fx-alignment: CENTER_RIGHT;"/>
+
+                        <TableColumn
+                                fx:id="colMontoCierre"
+                                text="Cierre"
+                                prefWidth="100"
+                                style="-fx-alignment: CENTER_RIGHT;"/>
+
+                        <TableColumn
+                                fx:id="colFecha"
+                                text="Fecha / Hora"
+                                prefWidth="145"/>
+
+                        <TableColumn
+                                fx:id="colEstado"
+                                text="Estado"
+                                prefWidth="100"
+                                style="-fx-alignment: CENTER;"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+        </SplitPane>
+    </center>
+
+    <!-- ====================================================================
+         BOTTOM: Área de log de eventos
+         ==================================================================== -->
+    <bottom>
+        <VBox style="-fx-padding: 0 10 10 10; -fx-spacing: 4;">
+            <Label
+                    text="Log de Eventos"
+                    style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #555;"/>
+            <!--
+                fx:id="txtAreaLog" → @FXML private TextArea txtAreaLog
+                editable="false" → solo lectura, el controlador escribe aquí
+                wrapText="true"   → no genera scroll horizontal
+            -->
+            <TextArea
+                    fx:id="txtAreaLog"
+                    editable="false"
+                    wrapText="true"
+                    prefRowCount="4"
+                    style="-fx-font-family: 'Courier New'; -fx-font-size: 11px;
+                           -fx-background-color: #1e1e1e; -fx-text-fill: #a8ff78;
+                           -fx-background-radius: 4;"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>
