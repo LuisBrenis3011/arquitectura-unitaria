@@ -1,0 +1,10 @@
+# Ignorar configuraciones de IntelliJ
+.idea/
+*.iml
+
+# Ignorar carpetas de compilación de Gradle en todos los subproyectos
+build/
+.gradle/
+
+# Ignorar los .jar generados (esos solo los pones en tu disco C: para entregar)
+*.jar
